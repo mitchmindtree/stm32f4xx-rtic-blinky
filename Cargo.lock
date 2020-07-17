@@ -294,7 +294,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "stm32f4xx-rtic"
+name = "stm32f4xx-rtic-blinky"
 version = "0.1.0"
 dependencies = [
  "cortex-m-rtic",
