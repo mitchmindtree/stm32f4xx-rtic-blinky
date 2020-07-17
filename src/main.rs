@@ -9,7 +9,7 @@ use rtic::cyccnt::U32Ext;
 use stm32f4xx_hal::gpio::{gpiod::PD13, Output, PushPull};
 use stm32f4xx_hal::prelude::*;
 
-const PERIOD: u32 = 100_000_000;
+const CYCLE_HZ: u32 = 168_000_000;
 
 #[app(device = stm32f4xx_hal::stm32, peripherals = true, monotonic = rtic::cyccnt::CYCCNT)]
 const APP: () = {
@@ -27,12 +27,7 @@ const APP: () = {
 
         // Setup clocks
         let rcc = device.RCC.constrain();
-        let _clocks = rcc
-            .cfgr
-            .use_hse(8.mhz())
-            .sysclk(72.mhz())
-            .pclk1(36.mhz())
-            .freeze();
+        let _clocks = rcc.cfgr.sysclk(CYCLE_HZ.hz()).freeze();
 
         // Setup LED
         let gpiod = device.GPIOD.split();
@@ -40,15 +35,15 @@ const APP: () = {
         led.set_low().unwrap();
 
         // Schedule the blinking task
-        cx.schedule.blink(cx.start + PERIOD.cycles()).unwrap();
+        cx.schedule.blink(cx.start + CYCLE_HZ.cycles()).unwrap();
 
-        init::LateResources { led: led }
+        init::LateResources { led }
     }
 
     #[task(resources = [led], schedule = [blink])]
     fn blink(cx: blink::Context) {
         cx.resources.led.toggle().unwrap();
-        cx.schedule.blink(cx.scheduled + PERIOD.cycles()).unwrap();
+        cx.schedule.blink(cx.scheduled + CYCLE_HZ.cycles()).unwrap();
     }
 
     extern "C" {
