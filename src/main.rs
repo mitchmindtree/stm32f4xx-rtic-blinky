@@ -32,7 +32,7 @@ const APP: () = {
         // Setup LED
         let gpiod = device.GPIOD.split();
         let mut led = gpiod.pd13.into_push_pull_output();
-        led.set_low().unwrap();
+        led.set_high().unwrap();
 
         // Schedule the blinking task
         cx.schedule.blink(cx.start + CYCLE_HZ.cycles()).unwrap();
@@ -44,6 +44,13 @@ const APP: () = {
     fn blink(cx: blink::Context) {
         cx.resources.led.toggle().unwrap();
         cx.schedule.blink(cx.scheduled + CYCLE_HZ.cycles()).unwrap();
+    }
+
+    #[idle]
+    fn idle(_: idle::Context) -> ! {
+        loop {
+            core::sync::atomic::spin_loop_hint();
+        }
     }
 
     extern "C" {
